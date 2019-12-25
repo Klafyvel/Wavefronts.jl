@@ -6,7 +6,7 @@
 
 This is a small library allowing to retrieve aberrations from an interferometer image.
 
-Aberrations are expressed in Zernike polynomials. 
+Aberrations are expressed in Zernike polynomials.
 
 ## Examples
 
@@ -14,6 +14,8 @@ Aberrations are expressed in Zernike polynomials.
 using Plots
 using Wavefronts
 ```
+
+Let's model a phase stepping interferometer
 
 
 ```julia
@@ -30,7 +32,37 @@ patterns = [
     map(intensity(a, Wavefront(Tip(30)+Piston(i*π/2), circ)), X, Y)
     for i in 0:3
 ]
+```
 
+
+
+
+    4-element Array{Array{Float64,2},1}:
+     [0.0 0.0 … 0.0 0.0; 0.0 0.0 … 0.0 0.0; … ; 0.0 0.0 … 0.0 0.0; 0.0 0.0 … 0.0 0.0]
+     [0.0 0.0 … 0.0 0.0; 0.0 0.0 … 0.0 0.0; … ; 0.0 0.0 … 0.0 0.0; 0.0 0.0 … 0.0 0.0]
+     [0.0 0.0 … 0.0 0.0; 0.0 0.0 … 0.0 0.0; … ; 0.0 0.0 … 0.0 0.0; 0.0 0.0 … 0.0 0.0]
+     [0.0 0.0 … 0.0 0.0; 0.0 0.0 … 0.0 0.0; … ; 0.0 0.0 … 0.0 0.0; 0.0 0.0 … 0.0 0.0]
+
+
+
+The patterns are like this
+
+
+```julia
+heatmap(x,y,patterns[1],aspect_ratio=1,title="Interference patterns")
+```
+
+
+
+
+![svg](/images/output_4_0.svg)
+
+
+
+Let's retrieve the raw phase
+
+
+```julia
 raw = rawphase(patterns...)
 heatmap(x,y,raw, aspect_ratio=1, title="Raw phase")
 ```
@@ -38,7 +70,7 @@ heatmap(x,y,raw, aspect_ratio=1, title="Raw phase")
 
 
 
-![svg](/images/output_1_0.svg)
+![svg](/images/output_6_0.svg)
 
 
 
@@ -51,7 +83,7 @@ heatmap(x,y,unwrapped, aspect_ratio=1, title="Unwrapped phase")
 
 
 
-![svg](/images/output_2_0.svg)
+![svg](/images/output_7_0.svg)
 
 
 
@@ -79,7 +111,7 @@ heatmap(x,y,calc_phase, aspect_ratio=1, title="Unwrapped phase, reference remove
 
 
 
-![svg](/images/output_5_0.svg)
+![svg](/images/output_10_0.svg)
 
 
 
@@ -93,7 +125,7 @@ heatmap(x,y,diff, aspect_ratio=1, title="Difference between original phase and c
 
 
 
-![svg](/images/output_6_0.svg)
+![svg](/images/output_11_0.svg)
 
 
 
@@ -102,13 +134,13 @@ It is expected that the border presents weird behaviour. We can ignore that.
 
 ```julia
 diff .*= circ.(X,Y)
-heatmap(x,y,diff, aspect_ratio=1, title="Difference between original phase and retreived phase, \nborder removed.")
+heatmap(x,y,diff, aspect_ratio=1, title="Difference between original phase and retrieved phase, \nborder removed.")
 ```
 
 
 
 
-![svg](/images/output_8_0.svg)
+![svg](/images/output_13_0.svg)
 
 
 
@@ -159,13 +191,13 @@ Better :D
 
 
 ```julia
-heatmap(x,y,diff, aspect_ratio=1, title="Difference between original phase and retreived phase, \nborder and 2pi ambiguity removed.")
+heatmap(x,y,diff, aspect_ratio=1, title="Difference between original phase and retrieved phase, \nborder and 2pi ambiguity removed.")
 ```
 
 
 
 
-![svg](/images/output_16_0.svg)
+![svg](/images/output_21_0.svg)
 
 
 
@@ -296,4 +328,4 @@ heatmap(x,y,corrected, aspect_ratio=1, title="Calculated phase corrected of tilt
 
 
 
-![svg](/images/output_31_0.svg)
+![svg](/images/output_36_0.svg)
