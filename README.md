@@ -6,6 +6,8 @@
 
 This is a small library allowing to retrieve aberrations from an interferometer image.
 
+Aberrations are expressed in Zernike polynomials. 
+
 ## Examples
 
 ```julia
