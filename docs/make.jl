@@ -10,5 +10,5 @@ makedocs(
 )
 
 deploydocs(
-    repo = "github.com/klafyvel/Wavefronts.jl.git",
+    repo = "klafyvel/Wavefronts.jl",
 )
