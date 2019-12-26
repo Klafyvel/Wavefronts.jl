@@ -10,9 +10,5 @@ makedocs(
 )
 
 deploydocs(
-<<<<<<< Updated upstream
-    repo = "Klafyvel/Wavefronts.jl",
-=======
     repo = "github.com/Klafyvel/Wavefronts.jl.git",
->>>>>>> Stashed changes
 )
