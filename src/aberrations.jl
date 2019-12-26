@@ -1,66 +1,132 @@
+
+"""
+Represents an aberration. This uses Zernike polynomials.
+
+See also: [`Piston`](@ref), [`Tilt`](@ref), [`Tip`](@ref), [`Defocus`](@ref), [`ObliqueAstigmatism`](@ref), [`VerticalAstigmatism`](@ref), [`HorizontalComa`](@ref), [`VerticalComa`](@ref), [`ObliqueTrefoil`](@ref), [`VerticalTrefoil`](@ref), [`Spherical`](@ref), [`AddAberration`](@ref), [`Astigmatism`](@ref), [`Coma`](@ref), [`Trefoil `](@ref)
+"""
 abstract type Aberration end
 
+"""
+Piston aberration.
+"""
 struct Piston <: Aberration
     piston::Real
 end
 Piston() = Piston(1)
+
+"""
+Tilt aberration.
+"""
 struct Tilt <: Aberration
     tilt::Real
 end
 Tilt() = Tilt(1)
+
+"""
+Tip aberration.
+"""
 struct Tip <: Aberration
     tip::Real
 end
 Tip() = Tip(1)
+
+"""
+Defocus aberration.
+"""
 struct Defocus <: Aberration
     defocus::Real
 end
 Defocus() = Defocus(1)
+
+"""
+ObliqueAstigmatism aberration.
+"""
 struct ObliqueAstigmatism <: Aberration
     oblique::Real
 end
 ObliqueAstigmatism() = ObliqueAstigmatism(1)
+
+"""
+VerticalAstigmatism aberration.
+"""
 struct VerticalAstigmatism <: Aberration
     vertical::Real
 end
 VerticalAstigmatism() = VerticalAstigmatism(1)
+
+"""
+HorizontalComa aberration.
+"""
 struct HorizontalComa <: Aberration
     horizontal::Real
 end
 HorizontalComa() = HorizontalComa(1)
+
+"""
+VerticalComa aberration.
+"""
 struct VerticalComa <: Aberration
     vertical::Real
 end
 VerticalComa() = VerticalComa(1)
+
+"""
+ObliqueTrefoil aberration.
+"""
 struct ObliqueTrefoil <: Aberration
     oblique::Real
 end
 ObliqueTrefoil() = ObliqueTrefoil(1)
+
+"""
+VerticalTrefoil aberration.
+"""
 struct VerticalTrefoil <: Aberration
     vertical::Real
 end
 VerticalTrefoil() = VerticalTrefoil(1)
+
+"""
+Spherical aberration.
+"""
 struct Spherical <: Aberration
     spherical::Real
 end
 Spherical() = Spherical(1)
 abstract type AbstractAddAberration <: Aberration end
+
+"""
+The addition of two aberrations. It is created when `+` operator is used on two
+[`Aberration`](@ref).
+"""
 struct AddAberration <: AbstractAddAberration
     left::Aberration
     right::Aberration
 end
+
+"""
+Astigmatism aberration.
+"""
 struct Astigmatism <: AbstractAddAberration
     left::ObliqueAstigmatism
     right::VerticalAstigmatism
 end
 Astigmatism(oblique::Real, vertical::Real) = Astigmatism(ObliqueAstigmatism(oblique), VerticalAstigmatism(vertical))
 Astigmatism() = Astigmatism(ObliqueAstigmatism(), VerticalAstigmatism())
+
+"""
+Coma aberration.
+"""
 struct Coma <: AbstractAddAberration
     left::HorizontalComa
     right::VerticalComa
 end
 Coma(horizontal::Real, vertical::Real) = Coma(HorizontalComa(horizontal), VerticalComa(vertical))
 Coma() = Coma(HorizontalComa(), VerticalComa())
+
+"""
+Trefoil aberration.
+"""
 struct Trefoil <: AbstractAddAberration
     left::ObliqueTrefoil
     right::VerticalTrefoil
@@ -68,9 +134,16 @@ end
 Trefoil(oblique::Real, vertical::Real) = Trefoil(ObliqueTrefoil(oblique), VerticalTrefoil(vertical))
 Trefoil() = Trefoil(ObliqueTrefoil(), VerticalTrefoil())
 
-phase(ab::Aberration) = phase(Polar, ab)
+"""
+    phase(aberration, coordinates=:cartesian)
+
+Create a function mapping the phase of the `aberration` in the given `coordinates`
+system (`:cartesian` or `:polar`).
+
+See also: [`intensity`](@ref), [`amplitude`](@ref)
+"""
+phase(ab::Aberration, coordinates::Symbol=:cartesian) = phase(convert(Coordinates, coordinates), ab)
 phase(t::Coordinates, ab::Aberration) = phase(typeof(t), ab::Aberration)
-phase(ab::Aberration, coordinates::Symbol) = phase(convert(Coordinates, coordinates), ab)
 phase(::Type{Cartesian}, ab::Aberration) = begin
     ϕ = phase(Polar(), ab)
     (x,y) -> begin
@@ -95,6 +168,7 @@ phase(c::Type{Polar}, ab::AbstractAddAberration) = begin
     ϕ2 = phase(c, ab.right)
     (r,θ) -> ϕ1(r,θ) + ϕ2(r,θ)
 end
+
 Base.:+(a::T, b::U) where {T<:Aberration, U<:Aberration} = AddAberration(a,b)
 
 Base.:*(a::T, b::Piston) where {T<:Real} = Piston(a * b.piston)
@@ -110,12 +184,32 @@ Base.:*(a::T, b::VerticalTrefoil) where {T<:Real} = VerticalTrefoil(a * b.vertic
 Base.:*(a::T, b::Spherical) where {T<:Real} = Spherical(a * b.spherical)
 Base.:*(a::T, b::U) where {T<:Real, U<:AbstractAddAberration} = U(a * b.left, a * b.right)
 
-intensity(ab::Aberration=Piston(), coordinates::Symbol=:cartesian) = begin
+"""
+    intensity(aberration, coordinates=:cartesian; mask=(x,y)->1)
+
+Creates a function mapping the intensity in the given `coordinates` system
+(`:cartesian` or `:polar`). This is equivalent of building two `Wavefront`, one
+with no aberration and the other with the given `aberration`.
+
+See also: [`phase`](@ref), [`amplitude`](@ref)
+"""
+intensity(ab::Aberration=Piston(), coordinates::Symbol=:cartesian; mask::Function=((a,b)->1)) = begin
     c = convert(Coordinates, coordinates)
     ϕ = phase(c, ab)
-    (a,b) -> abs(1 + circ(c, a, b)*exp(1im*ϕ(a,b)))^2
+    (a,b) -> abs(1 + mask(a,b)*exp(1im*ϕ(a,b)))^2
 end
 
+"""
+    project(aberration, data; mask=(x,y)->1)
+
+Project the `data` onto the Zernike polynomial corresponding to the `aberration`
+in order to get the fitting [`Aberration`](@ref). A `mask` can be used to fit only
+in certain parts of the data (typically usefull if your interference pattern is
+only relevant in a circular region). The coordinates are assumed to be normalized
+such that (x,y) ∈ [-1;1]².
+
+See also: [`correct`](@ref)
+"""
 project(ab::Type{<:Aberration}, data::Array{<:Real, 2}; mask::Function=((x,y)->1)) = project(ab(), data, mask=mask)
 function project(ab::Aberration, data::Array{<:Real, 2}; mask::Function=((x,y)->1))
     ϕ = phase(Cartesian, ab)
@@ -130,6 +224,14 @@ function project(ab::AbstractAddAberration, data::Array{<:Real, 2}; mask::Functi
     typeof(ab)(project(ab.left, data, mask=mask),project(ab.right, data, mask=mask))
 end
 
+"""
+    correct(aberration, data; mask=(x,y)->1)
+
+Correct the given aberration in the data by [`project`](@ref)ing the data on the
+aberration.
+
+See also: [`project`](@ref)
+"""
 function correct(ab::Type{<:Aberration}, data::Array{<:Real, 2}; mask::Function=((x,y)->1))
     aberration = project(ab,data,mask=mask)
     ϕ = phase(Cartesian, aberration)

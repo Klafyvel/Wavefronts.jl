@@ -1,8 +1,11 @@
 module Wavefronts
 
 
-export intensity, field, Wavefront
-export Piston, Tilt, Tip, Defocus, Astigmatism, Coma, Trefoil, Spherical, phase, project, correct
+export intensity, field, Wavefront, AddWavefront, amplitude
+export Piston, Tilt, Tip, Defocus, Astigmatism, Coma, AddAberration
+export Trefoil, Spherical, VerticalAstigmatism, ObliqueAstigmatism
+export Aberration, HorizontalComa, VerticalComa, ObliqueTrefoil, VerticalTrefoil
+export phase, project, correct
 export circ
 export rawphase, unwrapphase, retrievephase
 

@@ -5,6 +5,11 @@ struct Cartesian <: Coordinates end
 circ(r) = if r < 1 1 else 0 end
 circ(::Polar, r,θ) = circ(r)
 circ(::Cartesian, x,y) = circ(x^2+y^2)
+"""
+    circ(x,y)
+
+Circular mask of radius 1.
+"""
 circ(x,y) = circ(Cartesian(), x, y)
 
 Base.convert(::Type{Coordinates}, s::Symbol) = begin
