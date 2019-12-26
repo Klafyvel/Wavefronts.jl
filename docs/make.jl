@@ -10,5 +10,5 @@ makedocs(
 )
 
 deploydocs(
-    repo = "klafyvel/Wavefronts.jl",
+    repo = "Klafyvel/Wavefronts.jl",
 )
